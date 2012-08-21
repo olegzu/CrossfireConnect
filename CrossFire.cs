@@ -145,6 +145,9 @@ namespace CrossfireConnect
                             string s = "Content-Length:" + (data.Length).ToString() + "\r\n\r\n" + data + "\r\n";
                             // socket.Send(ASCII.GetBytes(s));
                             byte[] buffer = ASCII.GetBytes(s);
+                            // Need your help. Have BUG. 
+                            // After some time do not send commands to Crossfire. 
+                            // Messages from Crossfire are accepted all the time
                             networkStream.Write(buffer, 0, buffer.Length);
 
                         }
