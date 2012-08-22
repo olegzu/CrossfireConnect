@@ -32,6 +32,20 @@ namespace CrossfireConnect
         public delegate void StringHandler(string data);
         public static event StringHandler NewData;
 
+        static System.Timers.Timer SendCommandTimeOut;
+
+        static CrossFire()
+        {
+            NewData += new StringHandler(CrossFire_NewData);
+            SendCommandTimeOut = new System.Timers.Timer(4000);
+            SendCommandTimeOut.Elapsed += new System.Timers.ElapsedEventHandler(SendCommandTimeOut_Elapsed);
+        }
+
+        static void CrossFire_NewData(string data)
+        {
+            SendCommandTimeOut.Enabled = false;
+        }
+
         public static void Connect()
         {
             new Thread(
@@ -128,7 +142,8 @@ namespace CrossfireConnect
 
         public static void Disconnect()
         {
-            networkStream.Close();
+            if (networkStream != null)
+                networkStream.Close();
             //socket.Close();
         }
 
@@ -225,7 +240,20 @@ namespace CrossfireConnect
                 data += "\r\n}";
             }
             data += "}\r\n";
+            SendCommandTimeOut.Enabled = true;
             SendData(data);
+        }
+
+        static void SendCommandTimeOut_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            SendCommandTimeOut.Enabled = false;
+            ReConnect();
+        }
+ 
+        private static void ReConnect()
+        {
+            Disconnect();
+            Connect();
         }
 
         public static void GetListContexts()
